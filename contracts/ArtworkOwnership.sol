@@ -2,10 +2,17 @@ pragma solidity ^0.4.24;
 
 import '../node_modules/zeppelin-solidity/contracts/token/ERC721/ERC721Basic.sol';
 import '../node_modules/zeppelin-solidity/contracts/token/ERC721/ERC721Receiver.sol';
+import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
+import '../node_modules/zeppelin-solidity/contracts/AddressUtils.sol';
+
 
 import './ArtworkBase.sol';
 
 contract ArtworkOwnership is ArtworkBase, ERC721Basic {
+
+  using SafeMath for uint256;
+  using AddressUtils for address;
+
   bytes4 private constant ERC721_RECEIVED = 0x150b7a02;
 
   function balanceOf(address _owner) public view returns (uint256) {
@@ -32,7 +39,7 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic {
   emit Approval(msg.sender, _to, _tokenId);
  }
 
-  function getApproved(_tokenId) public view returns (address) {
+  function getApproved(address _tokenId) public view returns (address) {
     return artworkApprovals[_tokenId];
   }
 
@@ -73,6 +80,25 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic {
       getApproved(_tokenId) == _spender ||
       isApprovedForAll(owner, _spender)
     );
+  }
+
+  function clearApproval(address _owner, uint256 _tokenId) internal {
+    require(ownerOf(_tokenId) == _owner);
+    if (artworkApprovals[_tokenId] != address(0)) {
+      artworkApprovals[_tokenId] = address(0);
+    }
+  }
+
+  function addTokenTo(address _to, uint256 _tokenId) internal {
+    require(artworkIndexToOwner[_tokenId] == address(0));
+    artworkIndexToOwner[_tokenId] = _to;
+    ownershipTokenCount[_to] = ownershipTokenCount[_to].add(1);
+  }
+
+  function removeTokenFrom(address _from, uint256 _tokenId) internal {
+    require(ownerOf(_tokenId) == _from);
+    ownershipTokenCount[_from] = ownershipTokenCount[_from].sub(1);
+    artworkIndexToOwner[_tokenId] = address(0);
   }
 
   function checkAndCallSafeTransfer(address _from, address _to, uint256 _tokenId, bytes _data) internal returns (bool) {

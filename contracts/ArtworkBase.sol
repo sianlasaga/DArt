@@ -11,7 +11,7 @@ contract ArtworkBase {
   // Artwork[] artwork;
 
   mapping (uint256 => address) artworkIndexToOwner;
-  mapping (address => uint16) ownershipTokenCount;
+  mapping (address => uint256) ownershipTokenCount;
   mapping (uint256 => address) artworkApprovals;
   mapping (address => mapping (address => bool)) internal operatorApprovals;
 }
