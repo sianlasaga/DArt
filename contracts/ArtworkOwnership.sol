@@ -2,36 +2,34 @@ pragma solidity ^0.4.24;
 
 import '../node_modules/zeppelin-solidity/contracts/token/ERC721/ERC721Basic.sol';
 import '../node_modules/zeppelin-solidity/contracts/token/ERC721/ERC721Receiver.sol';
-import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
 import '../node_modules/zeppelin-solidity/contracts/AddressUtils.sol';
 
 
 import './ArtworkBase.sol';
 
 contract ArtworkOwnership is ArtworkBase, ERC721Basic {
-
-  using SafeMath for uint256;
+  
   using AddressUtils for address;
 
   bytes4 private constant ERC721_RECEIVED = 0x150b7a02;
 
-  function balanceOf(address _owner) public view returns (uint256) {
+  function balanceOf(address _owner) public view returns (uint) {
     require(_owner != address(0));
     return ownershipTokenCount[_owner];
   }
 
-  function ownerOf(uint256 _tokenId) public view returns (address) {
+  function ownerOf(uint _tokenId) public view returns (address) {
     address owner = artworkIndexToOwner[_tokenId];
     require(owner != address(0));
     return owner;
   }
 
-  function exists(uint256 _tokenId) public view returns (bool) {
+  function exists(uint _tokenId) public view returns (bool) {
     address owner = artworkIndexToOwner[_tokenId];
     return owner != address(0);
   }
 
- function approve(address _to, uint256 _tokenId) public {
+ function approve(address _to, uint _tokenId) public {
   address owner = ownerOf(_tokenId);
   require(_to != owner);
   require(msg.sender == owner || isApprovedForAll(owner, msg.sender));
@@ -53,7 +51,7 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic {
     return operatorApprovals[_owner][_operator];
   }
 
-  function transferFrom(address _from, address _to, uint256 _tokenId) {
+  function transferFrom(address _from, address _to, uint _tokenId) {
     require(isApprovedOrOwner(msg.sender, _tokenId));
     require(_from != address(0));
     require(_to != address(0));
@@ -64,16 +62,16 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic {
     emit Transfer(_from, _to, _tokenId);
   }
 
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId) public {
+  function safeTransferFrom(address _from, address _to, uint _tokenId) public {
     safeTransferFrom(_from, _to, _tokenId, "");
   }
   
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes _data) public {
+  function safeTransferFrom(address _from, address _to, uint _tokenId, bytes _data) public {
     transferFrom(_from, _to, _tokenId);
     require(checkAndCallSafeTransfer(_from, _to, _tokenId, _data));
   }
 
-  function isApprovedOrOwner(address _spender, uint256 _tokenId) internal view returns (bool) {
+  function isApprovedOrOwner(address _spender, uint _tokenId) internal view returns (bool) {
     address owner = ownerOf(_tokenId);
     return (
       _spender == owner ||
@@ -82,26 +80,26 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic {
     );
   }
 
-  function clearApproval(address _owner, uint256 _tokenId) internal {
+  function clearApproval(address _owner, uint _tokenId) internal {
     require(ownerOf(_tokenId) == _owner);
     if (artworkApprovals[_tokenId] != address(0)) {
       artworkApprovals[_tokenId] = address(0);
     }
   }
 
-  function addTokenTo(address _to, uint256 _tokenId) internal {
+  function addTokenTo(address _to, uint _tokenId) internal {
     require(artworkIndexToOwner[_tokenId] == address(0));
     artworkIndexToOwner[_tokenId] = _to;
     ownershipTokenCount[_to] = ownershipTokenCount[_to].add(1);
   }
 
-  function removeTokenFrom(address _from, uint256 _tokenId) internal {
+  function removeTokenFrom(address _from, uint _tokenId) internal {
     require(ownerOf(_tokenId) == _from);
     ownershipTokenCount[_from] = ownershipTokenCount[_from].sub(1);
     artworkIndexToOwner[_tokenId] = address(0);
   }
 
-  function checkAndCallSafeTransfer(address _from, address _to, uint256 _tokenId, bytes _data) internal returns (bool) {
+  function checkAndCallSafeTransfer(address _from, address _to, uint _tokenId, bytes _data) internal returns (bool) {
     if (!_to.isContract()) {
       return true;
     }
