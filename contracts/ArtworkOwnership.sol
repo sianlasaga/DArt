@@ -37,7 +37,7 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic {
   emit Approval(msg.sender, _to, _tokenId);
  }
 
-  function getApproved(address _tokenId) public view returns (address) {
+  function getApproved(uint _tokenId) public view returns (address) {
     return artworkApprovals[_tokenId];
   }
 
