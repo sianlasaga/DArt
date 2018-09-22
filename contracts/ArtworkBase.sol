@@ -24,6 +24,7 @@ contract ArtworkBase is Ownable {
     string completeAddress;
     uint artworkCount;
     bool canAddArtwork;
+    bool canCreateAuction;
   }
 
   Artwork[] public artworks;
@@ -35,9 +36,9 @@ contract ArtworkBase is Ownable {
   mapping (uint => address) internal artworkApprovals;
   mapping (address => mapping (address => bool)) internal operatorApprovals;
   
-  mapping (address => Gallery) private galleries;
-  // mapping (string => uint[]) public categoryToArtIndexes;
-  // mapping (string => uint[]) public artistToArtIndexes;
+  mapping (address => Gallery) internal galleries;
+  mapping (string => uint[]) categoryToArtIndexes;
+  mapping (string => uint[]) artistToArtIndexes;
 
   // uint private artAvailableIndex;
 
@@ -62,7 +63,8 @@ contract ArtworkBase is Ownable {
       name: _name,
       completeAddress: _completeAddress,
       artworkCount: 0,
-      canAddArtwork: true
+      canAddArtwork: true,
+      canCreateAuction: true
     });
     galleries[_galleryAddress] = gallery;
   }
@@ -81,8 +83,8 @@ contract ArtworkBase is Ownable {
     uint index = artworks.push(artwork);
     artworkIndexToOwner[index] = msg.sender;
     ownershipTokenCount[msg.sender] = ownershipTokenCount[msg.sender].add(1);
-    // categoryToArtIndexes[_category].push(index);
-    // artistToArtIndexes[_artist].push(index);
+    categoryToArtIndexes[_category].push(index);
+    artistToArtIndexes[_artist].push(index);
     galleries[msg.sender].artworkCount = galleries[msg.sender].artworkCount.add(1);
     return true;
   }

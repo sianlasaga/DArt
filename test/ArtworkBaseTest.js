@@ -50,10 +50,8 @@ contract('ArtworkBase', accounts => {
     })
 
     it('allows a gallerist to add an artwork', async () => {
-      beforeEach(async () => {
-        await artworkBase.addGallery(gallery1, galleryName1, address1, { from: owner })
-      })
       try {
+        await artworkBase.addGallery(gallery1, galleryName1, address1, { from: owner })
         await artworkBase.addArtwork(randomWord1, category1, artist1, image1, description1, year1, { from: gallery1 })
         const [title, category, artist, photoIpfsHash, description, year] = await artworkBase.getArtwork(0)
         const count = await artworkBase.getArtworkCount()
@@ -65,7 +63,6 @@ contract('ArtworkBase', accounts => {
         assert.equal(description, description1)
         assert.equal(year, year1)
       } catch (error) {
-        console.log(error)
         assert.fail()        
       }
     })
