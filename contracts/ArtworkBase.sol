@@ -8,19 +8,21 @@ contract ArtworkBase is Ownable {
   using SafeMath for uint;
 
   struct Artwork {
-    bytes10 title;
-    bytes10 category;
-    bytes20 artist;
+    string title;
+    string category;
+    string artist;
     string photoIpfsHash;
     string description;
     uint16 year;
+    address currentOwner;
+    address[] ownerHistory;
     // uint32 usdPrice;
   }
 
   struct Gallery {
-    bytes10 name;
-    bytes20 completeAddress;
-    uint16 artworkCount;
+    string name;
+    string completeAddress;
+    uint artworkCount;
     bool canAddArtwork;
   }
 
@@ -34,12 +36,12 @@ contract ArtworkBase is Ownable {
   mapping (address => mapping (address => bool)) internal operatorApprovals;
   
   mapping (address => Gallery) private galleries;
-  mapping (bytes10 => uint[]) public categoryToArtIndexes;
-  mapping (bytes20 => uint[]) public artistToArtIndexes;
+  // mapping (string => uint[]) public categoryToArtIndexes;
+  // mapping (string => uint[]) public artistToArtIndexes;
 
   // uint private artAvailableIndex;
 
-  event AddGallery(address _galleryAddress, bytes10 _name, bytes20 _completeAddress);
+  event AddGallery(address _galleryAddress, string _name, string _completeAddress);
 
   constructor () public {
     owner = msg.sender;
@@ -50,17 +52,65 @@ contract ArtworkBase is Ownable {
     _;
   }
 
-  function addGallery(address _galleryAddress, bytes10 _name, bytes20 _completeAddress) public onlyOwner {
-    Gallery memory gallery = Gallery(_name, _completeAddress, 0, true);
+  modifier isArtworkExists(uint _index) {
+    require(artworks.length > 0 && _index < artworks.length);
+    _;
+  }
+
+  function addGallery(address _galleryAddress, string _name, string _completeAddress) public onlyOwner {
+    Gallery memory gallery = Gallery({
+      name: _name,
+      completeAddress: _completeAddress,
+      artworkCount: 0,
+      canAddArtwork: true
+    });
     galleries[_galleryAddress] = gallery;
   }
 
-  function addArtwork(bytes10 _title, bytes10 _category, bytes20 _artist, string _photoIpfsHash, string _description, uint16 _year) public canAddArtwork returns (bool) {
-    Artwork memory artwork = Artwork(_title, _category, _artist, _photoIpfsHash, _description, _year);
+  function addArtwork(string _title, string _category, string _artist, string _photoIpfsHash, string _description, uint16 _year) public canAddArtwork returns (bool) {
+    Artwork memory artwork = Artwork({
+      title: _title,
+      category: _category,
+      artist: _artist,
+      photoIpfsHash: _photoIpfsHash,
+      description: _description,
+      year: _year,
+      currentOwner: msg.sender,
+      ownerHistory: new address[](0)
+      });
     uint index = artworks.push(artwork);
     artworkIndexToOwner[index] = msg.sender;
     ownershipTokenCount[msg.sender] = ownershipTokenCount[msg.sender].add(1);
-    categoryToArtIndexes[_category].push(index);
-    artistToArtIndexes[_artist].push(index);
+    // categoryToArtIndexes[_category].push(index);
+    // artistToArtIndexes[_artist].push(index);
+    galleries[msg.sender].artworkCount = galleries[msg.sender].artworkCount.add(1);
+    return true;
+  }
+
+  function getArtwork(uint _index) public view isArtworkExists(_index) returns (string, string, string, string, string, uint16) {
+    return (
+      artworks[_index].title,
+      artworks[_index].category,
+      artworks[_index].artist,
+      artworks[_index].photoIpfsHash,
+      artworks[_index].description,
+      artworks[_index].year
+    );
+  }
+
+  function getArtworkCount() public view returns (uint) {
+    return artworks.length;
+  }
+
+  function getGalleryByAddress(address galleryAddress) public view returns (string, string, uint) {
+    return (
+      galleries[galleryAddress].name,
+      galleries[galleryAddress].completeAddress,
+      galleries[galleryAddress].artworkCount
+    );
+  }
+
+  function getArtworkOwnerHistoryCount(uint _index) public view isArtworkExists(_index) returns (uint) {
+    return artworks[_index].ownerHistory.length;
   }
 }
