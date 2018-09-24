@@ -9,6 +9,7 @@ contract Auction {
   address public owner;
   uint public startDate;
   uint public endDate;
+  uint public startingBid;
   uint public bidIncrement;
   uint public artworkIndex;
   uint public highestAllowedBidAmount;
@@ -17,12 +18,12 @@ contract Auction {
   mapping (address => uint) bidderToAmount;
 
   modifier onlyNotEnded() {
-    require(endDate < now && now > startDate);
+    require(getTimeRemaining() > 0);
     _;
   }
 
   modifier onlyEnded() {
-    require(now >= endDate);
+    require(now >= endDate, "ended");
     _;
   }
 
@@ -33,20 +34,24 @@ contract Auction {
 
   modifier onlyValidBid() {
     uint currentBid = bidderToAmount[msg.sender].add(msg.value);
+    if (highestBidder == 0x0) require(currentBid >= startingBid);
     require(currentBid >= bidderToAmount[highestBidder].add(bidIncrement));
     require(currentBid <= highestAllowedBidAmount);
     _;
   }
 
-  constructor (uint _duration, uint _artworkIndex, uint _highestAllowedBidAmount) public {
+  constructor (uint _durationInSec, uint _artworkIndex, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement) public {
     owner = msg.sender;
     startDate = now;
-    endDate = startDate.add(_duration);
+    endDate = startDate.add(_durationInSec);
     artworkIndex = _artworkIndex;
+    startingBid = _startingBid;
     highestAllowedBidAmount = _highestAllowedBidAmount;
+    bidIncrement = _bidIncrement;
   }
 
-  function getTimeRemaining() public view onlyNotEnded returns (uint) {
+  function getTimeRemaining() public view returns (uint) {
+    if (now > endDate) return 0;
     return endDate - startDate + now;
   }
 
@@ -64,6 +69,10 @@ contract Auction {
       highestBidder,
       bidderToAmount[highestBidder]
     );
+  }
+
+  function getTotalBidByAddress(address _bidder) external view returns (uint) {
+    return bidderToAmount[_bidder];
   }
 
   function withdraw() external payable onlyEnded returns (bool) {
