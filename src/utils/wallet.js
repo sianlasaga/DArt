@@ -5,8 +5,7 @@ import { provider } from '../config'
 class Wallet {
 
   constructor(privateKey) {
-    if (privateKey) this.wallet = new ethers.Wallet(privateKey)
-    else this.wallet = new ethers.Wallet.createRandom()
+    this.wallet = privateKey ? new ethers.Wallet(privateKey) : new ethers.Wallet.createRandom()
   }
 
   static generateNewWallet(password, progressCallback) {
