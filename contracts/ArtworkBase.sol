@@ -28,6 +28,7 @@ contract ArtworkBase is Ownable {
   }
 
   Artwork[] public artworks;
+  address[] public auctions;
 
   address private owner;
 
@@ -53,8 +54,18 @@ contract ArtworkBase is Ownable {
     _;
   }
 
-  modifier isArtworkExists(uint _index) {
-    require(artworks.length > 0 && _index < artworks.length);
+  modifier canCreateAuction() {
+    require(galleries[msg.sender].canCreateAuction);
+    _;
+  }
+
+  modifier isOwnerOfToken(uint _tokenId) {
+    require(msg.sender == artworkIndexToOwner[_tokenId]);
+    _;
+  }
+
+  modifier isArtworkExists(uint _tokenId) {
+    require(artworks.length > 0 && _tokenId < artworks.length);
     _;
   }
 
@@ -80,7 +91,7 @@ contract ArtworkBase is Ownable {
       currentOwner: msg.sender,
       ownerHistory: new address[](0)
       });
-    uint index = artworks.push(artwork);
+    uint index = artworks.push(artwork) - 1;
     artworkIndexToOwner[index] = msg.sender;
     ownershipTokenCount[msg.sender] = ownershipTokenCount[msg.sender].add(1);
     categoryToArtIndexes[_category].push(index);
@@ -89,15 +100,19 @@ contract ArtworkBase is Ownable {
     return true;
   }
 
-  function getArtwork(uint _index) public view isArtworkExists(_index) returns (string, string, string, string, string, uint16) {
+  function getArtwork(uint _tokenId) public view isArtworkExists(_tokenId) returns (string, string, string, string, string, uint16) {
     return (
-      artworks[_index].title,
-      artworks[_index].category,
-      artworks[_index].artist,
-      artworks[_index].photoIpfsHash,
-      artworks[_index].description,
-      artworks[_index].year
+      artworks[_tokenId].title,
+      artworks[_tokenId].category,
+      artworks[_tokenId].artist,
+      artworks[_tokenId].photoIpfsHash,
+      artworks[_tokenId].description,
+      artworks[_tokenId].year
     );
+  }
+
+  function getArtworkOwner(uint _tokenId) public view isArtworkExists(_tokenId) returns (address) {
+    return artworkIndexToOwner[_tokenId];
   }
 
   function getArtworkCount() public view returns (uint) {
@@ -112,7 +127,7 @@ contract ArtworkBase is Ownable {
     );
   }
 
-  function getArtworkOwnerHistoryCount(uint _index) public view isArtworkExists(_index) returns (uint) {
-    return artworks[_index].ownerHistory.length;
+  function getArtworkOwnerHistoryCount(uint _tokenId) public view isArtworkExists(_tokenId) returns (uint) {
+    return artworks[_tokenId].ownerHistory.length;
   }
 }

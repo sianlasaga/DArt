@@ -2,16 +2,21 @@ pragma solidity ^0.4.24;
 
 import './ArtworkBase.sol';
 import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
+import '../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol';
+import '../node_modules/zeppelin-solidity/contracts/token/ERC721/ERC721Basic.sol';
 
-contract Auction {
+contract Auction is Ownable {
   using SafeMath for uint;
 
-  address public owner;
+  event TransferTokenOwnership(address _from, address _to, uint _tokenId);
+
+  ERC721Basic public nfc;
+  address public gallery;
   uint public startDate;
   uint public endDate;
   uint public startingBid;
   uint public bidIncrement;
-  uint public artworkIndex;
+  uint public tokenId;
   uint public highestAllowedBidAmount;
   bool public hasOwnerWithdrawn;
   address public highestBidder;
@@ -32,6 +37,16 @@ contract Auction {
     _;
   }
 
+  modifier onlyHasBidder() {
+    require(highestBidder != 0x0);
+    _;
+  }
+
+  modifier onlyGallery() {
+    require(msg.sender == gallery);
+    _;
+  }
+
   modifier onlyValidBid() {
     uint currentBid = bidderToAmount[msg.sender].add(msg.value);
     if (highestBidder == 0x0) require(currentBid >= startingBid);
@@ -40,11 +55,12 @@ contract Auction {
     _;
   }
 
-  constructor (uint _durationInSec, uint _artworkIndex, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement) public {
-    owner = msg.sender;
+  constructor (uint _tokenId, address _gallery, uint _durationInSec, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement, address _nfc) public {
+    nfc = ERC721Basic(_nfc);
     startDate = now;
     endDate = startDate.add(_durationInSec);
-    artworkIndex = _artworkIndex;
+    tokenId = _tokenId;
+    gallery = _gallery;
     startingBid = _startingBid;
     highestAllowedBidAmount = _highestAllowedBidAmount;
     bidIncrement = _bidIncrement;
@@ -75,7 +91,7 @@ contract Auction {
     return bidderToAmount[_bidder];
   }
 
-  function withdraw() external payable onlyEnded returns (bool) {
+  function withdraw() external payable onlyEnded onlyHasBidder returns (bool) {
     require(highestBidder != msg.sender);
     if (msg.sender == owner && !hasOwnerWithdrawn) {
       owner.transfer(bidderToAmount[highestBidder]);
@@ -88,5 +104,14 @@ contract Auction {
       return true;
     }
     return false;
+  }
+
+  function cancel() public onlyGallery onlyNotEnded {
+    nfc.transferFrom(this, owner, tokenId);
+  }
+
+  function transferToken() public  {
+    emit TransferTokenOwnership(this, highestBidder, tokenId);
+    // nfc.transferFrom(this, highestBidder, tokenId);
   }
 }
