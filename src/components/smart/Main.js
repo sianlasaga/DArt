@@ -15,6 +15,8 @@ class Main extends Component {
     }
 
     this.handleInputChange = this.handleInputChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleCheckBox = this.handleCheckBox.bind(this)
   }
 
   handleInputChange(e) {
@@ -22,13 +24,35 @@ class Main extends Component {
     const { name, value } = e.target
     this.setState({ [name]: value })
   }
+
+  async handleSubmit(e) {
+    e.preventDefault()
+    const { privateKey, password } = this.state
+    console.log(privateKey)
+    try {
+      const wallet = new Wallet(privateKey)
+      console.log(wallet)
+      const encryptedWallet = await Wallet.encryptWallet(wallet.wallet, password)
+      console.log(encryptedWallet)
+      sessionStorage.setItem('jsonwallet', encryptedWallet)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  handleCheckBox() {
+    const { shouldGenerateWallet } = this.state
+    this.setState({ shouldGenerateWallet: !shouldGenerateWallet })
+  }
   
   render() {
     const { privateKey, password, shouldGenerateWallet } = this.state
     return (
       <Container>
 				<WalletForm
-					handleInputChange={this.handleInputChange}
+          handleInputChange={this.handleInputChange}
+          handleSubmit={this.handleSubmit}
+          handleCheckBox={this.handleCheckBox}
 					privateKey={privateKey}
 					password={password}
 					shouldGenerateWallet={shouldGenerateWallet}

@@ -5,10 +5,9 @@ const WalletForm = props => (
   <Form>
     {
       !props.shouldGenerateWallet ?
-      <Form.Group>
+      <Form.Group controlId="fromPrivateKey">
         <Form.Label>Private Key</Form.Label>
         <Form.Control
-          id="privateKey"
           name="privateKey"
 					value={props.privateKey}
 					onChange={props.handleInputChange}
@@ -16,17 +15,20 @@ const WalletForm = props => (
         />
       </Form.Group> : null
     }
-    <Form.Group>
+    <Form.Group controlId="formPassword">
       <Form.Label>Password</Form.Label>
       <Form.Control
-        id="password"
+        type="password"
         name="password"
 				value={props.password}
 				onChange={props.handleInputChange}
         placeholder="Enter wallet password"
       />
     </Form.Group>
-    <Button variant="primary">
+    <Form.Group controlId="formCheckBox">
+      <Form.Check type="checkbox" checked={!props.shouldGenerateWallet} onChange={props.handleCheckBox} label="Open Wallet" />
+    </Form.Group>
+    <Button variant="primary" onClick={props.handleSubmit}>
 			Confirm
     </Button>
   </Form>
