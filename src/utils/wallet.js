@@ -2,12 +2,11 @@ import ethers from 'ethers'
 
 import { provider } from '../config'
 
-class Wallet extends ethers.Wallet {
+class Wallet {
 
   constructor(privateKey) {
-    super()
     if (privateKey) this.wallet = new ethers.Wallet(privateKey)
-    else this.wallet = ethers.Wallet.createRandom()
+    else this.wallet = new ethers.Wallet.createRandom()
   }
 
   static generateNewWallet(password, progressCallback) {
