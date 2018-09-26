@@ -23,6 +23,16 @@ const description2 = faker.random.words(7)
 const year1 = faker.random.number({ min: 1900, max: 2018 })
 const year2 = faker.random.number({ min: 1900, max: 2018 })
 
+function awaitEvent (event, handler) {
+  return new Promise((resolve, reject) => {
+    function wrappedHandler (...args) {
+      Promise.resolve(handler(...args)).then(resolve).catch(reject);
+    }
+
+    event.watch(wrappedHandler);
+  });
+}
+
 contract('ArtworkBase, Auction', accounts => {
 
   const [owner, gallery1, gallery2, buyer1, bidder1, bidder2, bidder3] = accounts
@@ -31,7 +41,7 @@ contract('ArtworkBase, Auction', accounts => {
 
   beforeEach(async () => {
     artworkBase = await ArtworkOwnership.deployed()
-    auction = await Auction.deployed()
+    // auction = await Auction.deployed()
   })
 
   describe('ArtworkBase unit test', () => {
@@ -86,9 +96,17 @@ contract('ArtworkBase, Auction', accounts => {
     })
 
     it('allows gallerist to create an auction', async () => {
-      auction = await artworkBase.createAuction(0, 3600, 5 * ETHER, 10 * ETHER, 0.5 * ETHER, { from: gallery1 })
-      console.log(await artworkBase.getArtworkOwner(0))
-      assert(await artworkBase.getArtworkOwner(0), auction)
+      await artworkBase.createAuction(0, 3600, 5 * ETHER, 10 * ETHER, 0.5 * ETHER, { from: gallery1 })
+      const event = artworkBase.CreateContract({})
+      const watcher = async function (err, result) {
+        event.stopWatching()
+        if (err) throw err
+        const auctionAddress = result.args._auctionAddress
+        console.log(auctionAddress, 'auctionAddresss')
+        assert.equal(await artworkBase.getArtworkOwner(0), auctionAddress)
+        auction = await Auction.at(auctionAddress)
+      }
+      await awaitEvent(event, watcher)
     })
   })
   describe('Auction unit test', () => {
@@ -207,7 +225,7 @@ contract('ArtworkBase, Auction', accounts => {
 
     describe('when auction has ended', async () => {
       beforeEach(() => {
-        increaseTime(3600)
+        increaseTime(4000)
       })
 
       it('time remaining should be zero', async () => {
@@ -272,8 +290,10 @@ contract('ArtworkBase, Auction', accounts => {
 
       it('allows the auction owner to transfer the token to the highest bidder', async () => {
         try {
+          console.log(await artworkBase.getArtworkOwner(0), 'adsafewaygy7weg')
           await auction.transferToken({ from: gallery1 })
           console.log(bidder1)
+          console.log(gallery1, 'galll')
           console.log(await artworkBase.getArtworkOwner(0))
           assert.equal(await artworkBase.getArtworkOwner(0), bidder1)
         } catch (error) {

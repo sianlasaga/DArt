@@ -112,6 +112,6 @@ contract Auction is Ownable {
 
   function transferToken() public  {
     emit TransferTokenOwnership(this, highestBidder, tokenId);
-    // nfc.transferFrom(this, highestBidder, tokenId);
+    nfc.transferFrom(address(this), highestBidder, tokenId);
   }
 }

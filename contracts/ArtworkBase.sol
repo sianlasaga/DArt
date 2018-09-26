@@ -7,6 +7,8 @@ contract ArtworkBase is Ownable {
 
   using SafeMath for uint;
 
+  event CreateContract(address _creator, uint _tokenId, uint _durationInSec, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement, address _auctionAddress);
+
   struct Artwork {
     string title;
     string category;
