@@ -7,7 +7,9 @@ contract ArtworkBase is Ownable {
 
   using SafeMath for uint;
 
-  event CreateContract(address _creator, uint _tokenId, uint _durationInSec, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement, address _auctionAddress);
+  event AddGallery(address indexed _galleryAddress, string _name, string _completeAddress);
+  event AddArtwork(address indexed _galleryAddress, string _title, string _category, string _artist, string _photoIpfsHash, string _description, uint16 _year);
+  event CreateAuction(address _creator, uint _tokenId, uint _durationInSec, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement, address _auctionAddress);
 
   struct Artwork {
     string title;
@@ -32,20 +34,16 @@ contract ArtworkBase is Ownable {
   Artwork[] public artworks;
   address[] public auctions;
 
-  address private owner;
-
   mapping (uint => address) internal artworkIndexToOwner;
   mapping (address => uint) internal ownershipTokenCount;
   mapping (uint => address) internal artworkApprovals;
   mapping (address => mapping (address => bool)) internal operatorApprovals;
-  
+
   mapping (address => Gallery) internal galleries;
   mapping (string => uint[]) categoryToArtIndexes;
   mapping (string => uint[]) artistToArtIndexes;
 
   // uint private artAvailableIndex;
-
-  event AddGallery(address _galleryAddress, string _name, string _completeAddress);
 
   constructor () public {
     owner = msg.sender;
@@ -80,6 +78,7 @@ contract ArtworkBase is Ownable {
       canCreateAuction: true
     });
     galleries[_galleryAddress] = gallery;
+    emit AddGallery(_galleryAddress, _name, _completeAddress);
   }
 
   function addArtwork(string _title, string _category, string _artist, string _photoIpfsHash, string _description, uint16 _year) public canAddArtwork returns (bool) {
@@ -99,6 +98,7 @@ contract ArtworkBase is Ownable {
     categoryToArtIndexes[_category].push(index);
     artistToArtIndexes[_artist].push(index);
     galleries[msg.sender].artworkCount = galleries[msg.sender].artworkCount.add(1);
+    emit AddArtwork(msg.sender, _title, _category, _artist, _photoIpfsHash, _description, _year);
     return true;
   }
 
@@ -131,5 +131,13 @@ contract ArtworkBase is Ownable {
 
   function getArtworkOwnerHistoryCount(uint _tokenId) public view isArtworkExists(_tokenId) returns (uint) {
     return artworks[_tokenId].ownerHistory.length;
+  }
+
+  function getTotalSupply() public view returns (uint) {
+    return artworks.length;
+  }
+
+  function getAllAuctionAddresses() external view returns (address[]) {
+    return auctions;
   }
 }

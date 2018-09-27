@@ -9,6 +9,8 @@ contract Auction {
   using SafeMath for uint;
 
   event TransferTokenOwnership(address _from, address _to, uint _tokenId);
+  event PlaceBid(address indexed _bidder, uint _incrementAmount, uint totalAmount);
+  event Withdraw(address indexed _user, uint _amount);
 
   ERC721Basic public nfc;
   address public owner;
@@ -32,25 +34,10 @@ contract Auction {
     _;
   }
 
-  modifier onlyEnded() {
-    require(now >= endDate, "ended");
-    _;
-  }
-
   modifier onlyNotOwner() {
     require(msg.sender != owner);
     _;
   }
-
-  modifier onlyHasBidder() {
-    require(highestBidder != 0x0);
-    _;
-  }
-
-  // modifier onlyGallery() {
-  //   require(msg.sender == gallery);
-  //   _;
-  // }
 
   modifier onlyValidBid() {
     uint currentBid = bidderToAmount[msg.sender].add(msg.value);
@@ -84,9 +71,11 @@ contract Auction {
   function placeBid() public payable onlyNotEnded onlyValidBid onlyNotOwner {
     highestBidder = msg.sender;
     bidderToAmount[msg.sender] = bidderToAmount[msg.sender].add(msg.value);
+    emit PlaceBid(msg.sender, msg.value, bidderToAmount[msg.sender]);
   }
 
-  function getWinner() external view onlyEnded returns (address, uint) {
+  function getWinner() external view returns (address, uint) {
+    require(hasEnded());
     return (
       highestBidder,
       bidderToAmount[highestBidder]
@@ -97,16 +86,24 @@ contract Auction {
     return bidderToAmount[_bidder];
   }
 
-  function withdraw() external payable onlyEnded onlyHasBidder returns (bool) {
+  function isUserSubscribed(address _userAddress) external view returns (bool) {
+    return _userAddress == owner || bidderToAmount[_userAddress] > 0;
+  }
+
+  function withdraw() external payable returns (bool) {
+    require(hasEnded());
+    require(_hasBidder());
     require(highestBidder != msg.sender);
     if (msg.sender == owner && !hasOwnerWithdrawn) {
       owner.transfer(bidderToAmount[highestBidder]);
       bidderToAmount[highestBidder] = 0;
       hasOwnerWithdrawn = true;
+      emit Withdraw(msg.sender, bidderToAmount[highestBidder]);
       return true;
     } else {
       msg.sender.transfer(bidderToAmount[msg.sender]);
       bidderToAmount[msg.sender] = 0;
+      emit Withdraw(msg.sender, bidderToAmount[msg.sender]);
       return true;
     }
     return false;
@@ -116,8 +113,20 @@ contract Auction {
     nfc.transferFrom(this, owner, tokenId);
   }
 
-  function transferToken() public  {
-    emit TransferTokenOwnership(this, highestBidder, tokenId);
-    nfc.transferFrom(address(this), highestBidder, tokenId);
+  function transferToken() public {
+    address to = highestBidder;
+    if (!_hasBidder()) {
+      to = owner;
+    }
+    emit TransferTokenOwnership(this, to, tokenId);
+    nfc.transferFrom(address(this), to, tokenId);
+  }
+
+  function _hasBidder() private view returns (bool) {
+    return highestBidder != 0x0;
+  }
+
+  function hasEnded() public view returns (bool) {
+    return now >= endDate;
   }
 }

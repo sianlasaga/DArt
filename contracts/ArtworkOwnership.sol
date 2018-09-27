@@ -20,13 +20,35 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic, SupportsInterfaceWithLook
   }
 
   function createAuction(uint _tokenId, uint _durationInSec, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement) public canCreateAuction isOwnerOfToken(_tokenId) returns (address) {
+    require(_startingBid > _highestAllowedBidAmount);
+    require(_bidIncrement < _highestAllowedBidAmount.sub(_startingBid));
     Auction auction = new Auction(_tokenId, msg.sender, _durationInSec, _startingBid, _highestAllowedBidAmount, _bidIncrement, this);
     artworkIndexToOwner[_tokenId] = auction;
     ownershipTokenCount[auction] = ownershipTokenCount[auction].add(1);
     ownershipTokenCount[msg.sender] = ownershipTokenCount[msg.sender].sub(1);
     auctions.push(auction);
-    emit CreateContract(msg.sender, _tokenId, _durationInSec, _startingBid, _highestAllowedBidAmount, _bidIncrement, auction);
+    emit CreateAuction(msg.sender, _tokenId, _durationInSec, _startingBid, _highestAllowedBidAmount, _bidIncrement, auction);
     return auction;
+  }
+
+  function tokensOfOwner(address _owner) external view returns (uint256[]) {
+    uint256 tokenCount = balanceOf(_owner);
+
+    if (tokenCount == 0) {
+      return new uint256[](0);
+    }
+    uint256[] memory result = new uint256[](tokenCount);
+    uint256 currentIndex = 0;
+
+    uint256 artworkIndex;
+
+    for (artworkIndex = 1; artworkIndex <= getTotalSupply(); artworkIndex++) {
+      if (artworkIndexToOwner[artworkIndex] == _owner) {
+        result[currentIndex] = artworkIndex;
+        currentIndex++;
+      }
+    }
+    return result;
   }
 
   function balanceOf(address _owner) public view returns (uint256) {
@@ -67,8 +89,6 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic, SupportsInterfaceWithLook
     return operatorApprovals[_owner][_operator];
   }
 
-  event T(address f, address to, uint tok, address s);
-
   function transferFrom(address _from, address _to, uint256 _tokenId) public {
     require(isApprovedOrOwner(msg.sender, _tokenId));
     require(_from != address(0));
@@ -76,7 +96,6 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic, SupportsInterfaceWithLook
     clearApproval(_from, _tokenId);
     removeTokenFrom(_from, _tokenId);
     addTokenTo(_to, _tokenId);
-    emit T(_from, _to, _tokenId, msg.sender);
     emit Transfer(_from, _to, _tokenId);
   }
 
