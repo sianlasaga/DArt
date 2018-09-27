@@ -30,19 +30,6 @@ const GalleryForm = props => (
         placeholder="0x"
       />
     </Form.Group>
-    <Form.Group controlId="formPassword">
-      <Form.Label>Wallet Password</Form.Label>
-      <Form.Control
-        type="password"
-        name="password"
-				value={props.password}
-				onChange={props.handleInputChange}
-        placeholder="Enter your wallet password"
-      />
-    </Form.Group>
-    <Button variant="primary" onClick={props.handleSubmit}>
-			Add Gallery
-    </Button>
   </Form>
 )
 
