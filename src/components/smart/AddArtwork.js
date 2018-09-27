@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import { Container } from 'react-bootstrap/lib';
+import { Container, Button } from 'react-bootstrap/lib';
 
 import ArtworkForm from '../dumb/forms/ArtworkForm'
 import Contract from '../../utils/contract'
 import Wallet from '../../utils/wallet'
 import { upload } from '../../utils/ipfs'
+import WalletModal from '../dumb/WalletModal'
 
 class AddArtwork extends Component {
   constructor(props) {
@@ -18,10 +19,13 @@ class AddArtwork extends Component {
       description: '',
       year: '',
       password: '',
+      showWallet: false,
     }
     this.handleInputChange = this.handleInputChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleUpload = this.handleUpload.bind(this)
+    this.handleShow = this.handleShow.bind(this)
+		this.handleHide = this.handleHide.bind(this)
   }
 
   handleInputChange(e) {
@@ -29,6 +33,14 @@ class AddArtwork extends Component {
 		const { name, value } = e.target
 		this.setState({ [name]: value })
   }
+
+  handleShow() {
+		this.setState({ showWallet: true })
+	}
+
+	handleHide() {
+		this.setState({ showWallet: false })
+	}
   
   async handleSubmit(e) {
     e.preventDefault()
@@ -51,7 +63,7 @@ class AddArtwork extends Component {
   }
   
   render() {
-    const { title, category, artist, photoIpfsHash, description, year, password } = this.state
+    const { title, category, artist, photoIpfsHash, description, year, password, showWallet } = this.state
     return (
       <Container>
         <ArtworkForm
@@ -66,6 +78,17 @@ class AddArtwork extends Component {
           handleSubmit={this.handleSubmit}
           handleUpload={this.handleUpload}
         />
+        <Button variant="primary" onClick={this.handleShow}>
+          Add Artwork
+        </Button>
+        <WalletModal
+          showWallet={showWallet}
+          handleInputChange={this.handleInputChange}
+          password={password}
+					handleHide={this.handleHide}
+					handleShow={this.handleShow}
+					handleSubmit={this.handleSubmit}
+				/>
       </Container>
     )
   }

@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
-import { Container } from 'react-bootstrap/lib'
+import { Container, Button } from 'react-bootstrap/lib'
 
 import Contract from '../../utils/contract'
 import Wallet from '../../utils/wallet'
 import GalleryForm from '../dumb/forms/GalleryForm'
+import WalletModal from '../dumb/WalletModal'
 
 class AddGallery extends Component {
 
@@ -14,15 +15,26 @@ class AddGallery extends Component {
 			address: '',
 			location: '',
 			password: '',
+			showWallet: false,
 		}
 		this.handleInputChange = this.handleInputChange.bind(this)
 		this.handleSubmit = this.handleSubmit.bind(this)
+		this.handleShow = this.handleShow.bind(this)
+		this.handleHide = this.handleHide.bind(this)
 	}
 
 	handleInputChange(e) {
 		e.preventDefault()
 		const { name, value } = e.target
 		this.setState({ [name]: value })
+	}
+
+	handleShow() {
+		this.setState({ showWallet: true })
+	}
+
+	handleHide() {
+		this.setState({ showWallet: false })
 	}
 
 	async handleSubmit(e) {
@@ -41,7 +53,7 @@ class AddGallery extends Component {
 	}
 
 	render() {
-		const { name, address, location } = this.state
+		const { name, address, location, showWallet, password } = this.state
 		return (
 			<Container>
 				<GalleryForm
@@ -50,6 +62,17 @@ class AddGallery extends Component {
 					name={name}
 					address={address}
 					location={location}
+				/>
+				<Button variant="primary" onClick={this.handleShow}>
+					Add Gallery
+				</Button>
+				<WalletModal
+					showWallet={showWallet}
+					handleInputChange={this.handleInputChange}
+					password={password}
+					handleHide={this.handleHide}
+					handleShow={this.handleShow}
+					handleSubmit={this.handleSubmit}
 				/>
 			</Container>
 		);

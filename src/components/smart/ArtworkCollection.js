@@ -11,6 +11,7 @@ class ArtworkCollection extends Component {
     this.state = {
       artworks: [],
     }
+    this.handleCard = this.handleCard.bind(this)
   }
 
   async componentWillMount() {
@@ -24,6 +25,10 @@ class ArtworkCollection extends Component {
     }))
     this.setState({ artworks })
   }
+
+  handleCard(tokenId) {
+    this.props.history.push(`/artwork/${tokenId}`)
+  }
   
   render() {
     const { artworks } = this.state
@@ -35,6 +40,7 @@ class ArtworkCollection extends Component {
             artworks.map(artwork =>
               <Col md={3} sm={6} key={artwork.title}>
                 <ArtworkCard
+                  handleCard={this.handleCard}
                   artwork={artwork}
                 />
               </Col>
