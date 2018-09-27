@@ -10,6 +10,7 @@ import NavigationBar from './components/smart/NavigationBar';
 import Main from './components/smart/Main'
 import AddGallery from './components/smart/AddGallery'
 import AddArtwork from './components/smart/AddArtwork'
+import ArtworkView from './components/smart/ArtworkView'
 import ArtworkCollection from './components/smart/ArtworkCollection'
 import registerServiceWorker from './registerServiceWorker'
 
@@ -22,6 +23,7 @@ const Root = () => (
         <Route path="/add/gallery" component={AddGallery} />
         <Route path="/add/artwork" component={AddArtwork} />
         <Route path="/collections" component={ArtworkCollection} />
+        <Route path="/artwork/:tokenId" component={ArtworkView} />
       </Switch>
     </Container>
   </Router>

@@ -2,9 +2,9 @@ import React from 'react'
 import { Card } from 'react-bootstrap/lib'
 
 const ArtworkCard = props => {
-  const { artwork, timeRemaining } = props
+  const { artwork, timeRemaining, handleCard } = props
   return (
-    <Card style={{ cursor: 'pointer' }}>
+    <Card style={{ cursor: 'pointer' }} onClick={() => handleCard(artwork.tokenId)}>
       <Card.Img variant="top" style={{ height: '12em' }} thumbnail fluid src={artwork.imgURL} />
       <Card.Body>
         <Card.Title>{artwork.title}</Card.Title>
