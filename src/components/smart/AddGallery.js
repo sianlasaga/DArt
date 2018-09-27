@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Container } from 'react-bootstrap'
+import { Container } from 'react-bootstrap/lib'
 
 import Contract from '../../utils/contract'
 import Wallet from '../../utils/wallet'
