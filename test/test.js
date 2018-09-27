@@ -102,7 +102,6 @@ contract('ArtworkBase, Auction', accounts => {
         event.stopWatching()
         if (err) throw err
         const auctionAddress = result.args._auctionAddress
-        console.log(auctionAddress, 'auctionAddresss')
         assert.equal(await artworkBase.getArtworkOwner(0), auctionAddress)
         auction = await Auction.at(auctionAddress)
       }
@@ -117,19 +116,16 @@ contract('ArtworkBase, Auction', accounts => {
       const endDate = await auction.endDate()
       const startingBid = await auction.startingBid()
       const bidIncrement = await auction.bidIncrement()
-      const artworkIndex = await auction.artworkIndex()
+      const tokenId = await auction.tokenId()
       const highestAllowedBidAmount = await auction.highestAllowedBidAmount()
       const hasOwnerWithdrawn = await auction.hasOwnerWithdrawn()
       const highestBidder = await auction.highestBidder()
-      // console.log(new Date(deployedDate))
-      // console.log(startDate.c * 1000)
-      // console.log(endDate * 1000)
-      assert.equal(actualOwner, owner)
+      assert.equal(actualOwner, gallery1)
       // assert.equal(new Date(startDate * 1000).toGMTString(), new Date(deployedDate).toGMTString())
       // assert.equal(new Date(endDate * 1000).toGMTString(), new Date(deployedDate + 3600).toGMTString())
       assert.equal(startingBid, 5 * ETHER)
       assert.equal(bidIncrement, 0.5 * ETHER)
-      assert.equal(artworkIndex, 0)
+      assert.equal(tokenId, 0)
       assert.equal(highestAllowedBidAmount, 10 * ETHER)
       assert.equal(hasOwnerWithdrawn, false)
       assert.equal(highestBidder, '0x0000000000000000000000000000000000000000')
@@ -272,10 +268,11 @@ contract('ArtworkBase, Auction', accounts => {
 
       it('allows the owner to withdraw the amount of the winning bidder', async () => {
         try {
-          const currentOwnerBal = await web3.eth.getBalance(owner) / ETHER
-          await auction.withdraw({ from: owner })
-          assert.equal((await web3.eth.getBalance(owner) / ETHER).toFixed(0), (currentOwnerBal + 8).toFixed(0))
+          const currentOwnerBal = await web3.eth.getBalance(gallery1) / ETHER
+          await auction.withdraw({ from: gallery1 })
+          assert.equal((await web3.eth.getBalance(gallery1) / ETHER).toFixed(0), (currentOwnerBal + 8).toFixed(0))
         } catch (error) {
+          console.log(error)
           assert.fail()
         }
       })
@@ -290,11 +287,7 @@ contract('ArtworkBase, Auction', accounts => {
 
       it('allows the auction owner to transfer the token to the highest bidder', async () => {
         try {
-          console.log(await artworkBase.getArtworkOwner(0), 'adsafewaygy7weg')
           await auction.transferToken({ from: gallery1 })
-          console.log(bidder1)
-          console.log(gallery1, 'galll')
-          console.log(await artworkBase.getArtworkOwner(0))
           assert.equal(await artworkBase.getArtworkOwner(0), bidder1)
         } catch (error) {
           console.log(error)

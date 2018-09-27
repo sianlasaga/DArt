@@ -5,13 +5,13 @@ import '../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol';
 import '../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol';
 import '../node_modules/zeppelin-solidity/contracts/token/ERC721/ERC721Basic.sol';
 
-contract Auction is Ownable {
+contract Auction {
   using SafeMath for uint;
 
   event TransferTokenOwnership(address _from, address _to, uint _tokenId);
 
   ERC721Basic public nfc;
-  address public gallery;
+  address public owner;
   uint public startDate;
   uint public endDate;
   uint public startingBid;
@@ -21,6 +21,11 @@ contract Auction is Ownable {
   bool public hasOwnerWithdrawn;
   address public highestBidder;
   mapping (address => uint) bidderToAmount;
+
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
 
   modifier onlyNotEnded() {
     require(getTimeRemaining() > 0);
@@ -42,10 +47,10 @@ contract Auction is Ownable {
     _;
   }
 
-  modifier onlyGallery() {
-    require(msg.sender == gallery);
-    _;
-  }
+  // modifier onlyGallery() {
+  //   require(msg.sender == gallery);
+  //   _;
+  // }
 
   modifier onlyValidBid() {
     uint currentBid = bidderToAmount[msg.sender].add(msg.value);
@@ -57,10 +62,11 @@ contract Auction is Ownable {
 
   constructor (uint _tokenId, address _gallery, uint _durationInSec, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement, address _nfc) public {
     nfc = ERC721Basic(_nfc);
+    owner = msg.sender;
     startDate = now;
     endDate = startDate.add(_durationInSec);
     tokenId = _tokenId;
-    gallery = _gallery;
+    owner = _gallery;
     startingBid = _startingBid;
     highestAllowedBidAmount = _highestAllowedBidAmount;
     bidIncrement = _bidIncrement;
@@ -106,7 +112,7 @@ contract Auction is Ownable {
     return false;
   }
 
-  function cancel() public onlyGallery onlyNotEnded {
+  function cancel() public onlyOwner onlyNotEnded {
     nfc.transferFrom(this, owner, tokenId);
   }
 
