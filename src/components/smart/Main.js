@@ -36,6 +36,8 @@ class Main extends Component {
       const encryptedWallet = await Wallet.encryptWallet(wallet.wallet, password)
       console.log(encryptedWallet)
       sessionStorage.setItem('jsonwallet', encryptedWallet)
+      // this.props.history.push('/artworks')
+      window.location.href = '/artworks'
     } catch (error) {
       console.log(error)
     }
@@ -51,7 +53,7 @@ class Main extends Component {
     return (
       <Container style={{ padding: '5%' }}>
         <Jumbotron style={{ width: '65%', margin: 'auto', paddingRight: '7.5%', paddingLeft: '7.5%' }}>
-          <h1 style={{ textAlign: 'center'}}>Log in Wallet</h1>
+          <h1 style={{ textAlign: 'center'}}>{shouldGenerateWallet ? 'Create wallet' : 'Open Wallet' }</h1>
           <WalletForm
             handleInputChange={this.handleInputChange}
             handleSubmit={this.handleSubmit}

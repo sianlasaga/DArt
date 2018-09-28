@@ -28,7 +28,7 @@ class ArtworkView extends Component {
       bidIncrement: '',
       duration: '',
       password: '',
-      isGallerist: true,
+      canCreateAuction: false,
     }
     this.handleInputChange = this.handleInputChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
@@ -38,14 +38,14 @@ class ArtworkView extends Component {
 
   async componentWillMount() {
     try {
-      const { address } = JSON.parse(sessionStorage.getItem('jsonwallet'))
       const { tokenId } = this.props.match.params
       const contract = ContractUtil.loadContract('ArtworkOwnership')
-      const [name] = await contract.getGalleryByAddress(address)
-      if (name === '') this.setState({ isGallerist: false })
       const [title, category, artist, photoIpfsHash, description, year] = await contract.getArtwork(tokenId)
       const artwork = { tokenId, title, category, artist, imgURL: `https://ipfs.io/ipfs/${photoIpfsHash}`, description, year }
       this.setState({ artwork })
+      const jsonwallet = JSON.parse(sessionStorage.getItem('jsonwallet'))
+      const [,,,,canCreateAuction] = await contract.galleries(jsonwallet.address)
+      this.setState({ canCreateAuction })
     } catch (error) {
       console.log(error)
     }
@@ -73,7 +73,7 @@ class ArtworkView extends Component {
 			const jsonwallet = sessionStorage.getItem('jsonwallet')
 			const wallet = await Wallet.decryptWallet(jsonwallet, password)
 			const contract = ContractUtil.loadContract('ArtworkOwnership', wallet.privateKey)
-      const result = await contract.createAuction(artwork.tokenId, duration, ethers.utils.parseEther((startingPrice / 1000).toString()), ethers.utils.parseEther((maxBid / 1000).toString()), ethers.utils.parseEther((bidIncrement / 1000).toString()))
+      const result = await contract.createAuction(artwork.tokenId, duration * 60, ethers.utils.parseEther((startingPrice / 1000).toString()), ethers.utils.parseEther((maxBid / 1000).toString()), ethers.utils.parseEther((bidIncrement / 1000).toString()))
       console.log(result)
       this.props.history.push('/auctions')
 		} catch (error) {
@@ -82,7 +82,7 @@ class ArtworkView extends Component {
   }
   
   render() {
-    const { artwork, isGallerist, showWallet, startingPrice, maxBid, bidIncrement, duration, password } = this.state
+    const { artwork, canCreateAuction, showWallet, startingPrice, maxBid, bidIncrement, duration, password } = this.state
     const { title, category, artist, imgURL, description, year } = artwork
     return (
       <Container>
@@ -96,7 +96,7 @@ class ArtworkView extends Component {
           <Row><p>{description}</p></Row>
         </div>
         {
-          isGallerist ? (
+          canCreateAuction ? (
             <Row style={{ marginTop: '7.5%' }}>
               <Jumbotron style={{ margin: 'auto', paddingTop: '3%', minWidth: '25em', maxWidth: '40em' }}>
                 <h3 style={{ textAlign: 'center', marginBottom: '5%' }}>Create Auction</h3>

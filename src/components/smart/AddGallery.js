@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Container, Button } from 'react-bootstrap/lib'
+import { Container, Button, Jumbotron } from 'react-bootstrap/lib'
 
 import ContractUtil from '../../utils/contract'
 import Wallet from '../../utils/wallet'
@@ -57,17 +57,20 @@ class AddGallery extends Component {
 	render() {
 		const { name, address, location, showWallet, password } = this.state
 		return (
-			<Container>
-				<GalleryForm
-					handleInputChange={this.handleInputChange}
-					handleSubmit={this.handleSubmit}
-					name={name}
-					address={address}
-					location={location}
-				/>
-				<Button variant="primary" onClick={this.handleShow}>
-					Add Gallery
-				</Button>
+			<Container style={{ padding: '6%'}}>
+				<Jumbotron style={{ paddingTop: '4%', width: '60%', margin: 'auto'}}>
+				<h2 style={{ textAlign: 'center', marginBottom: '4%' }}>Add Galley</h2>
+					<GalleryForm
+						handleInputChange={this.handleInputChange}
+						handleSubmit={this.handleSubmit}
+						name={name}
+						address={address}
+						location={location}
+					/>
+					<Button variant="primary" onClick={this.handleShow}>
+						Add Gallery
+					</Button>
+				</Jumbotron>
 				<WalletModal
 					showWallet={showWallet}
 					handleInputChange={this.handleInputChange}

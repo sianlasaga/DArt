@@ -76,7 +76,7 @@ contract Auction {
   }
 
   function getWinner() external view returns (address, uint) {
-    require(hasEnded());
+    require(hasEnded() && !isCancelled);
     return (
       highestBidder,
       bidderToAmount[highestBidder]
@@ -115,6 +115,7 @@ contract Auction {
 
   function cancel() public onlyOwner onlyNotEnded {
     nfc.transferFrom(this, owner, tokenId);
+    highestBidder = 0x0;
     endDate = now;
     isCancelled = true;
   }

@@ -10,19 +10,20 @@ class NavigationBar extends Component {
     this.logout = this.logout.bind(this)
     this.redirectTo = this.redirectTo.bind(this)
     this.state = {
-      isGallerist: false,
+      canAddArtwork: false,
       isLoggedIn: false
     }
   }
 
   async componentWillMount() {
     try {
-      const { address } = JSON.parse(sessionStorage.getItem('jsonwallet'))
+      const jsonwallet = JSON.parse(sessionStorage.getItem('jsonwallet'))
+      if (!jsonwallet) return
       const contract = ContractUtil.loadContract('ArtworkOwnership')
-      const [name] = await contract.getGalleryByAddress(address)
+      const [,,,canAddArtwork] = await contract.galleries(jsonwallet.address)
       const isLoggedIn = sessionStorage.getItem('jsonwallet')
+      this.setState({ canAddArtwork })
       if (isLoggedIn) this.setState({ isLoggedIn: true })
-      if (name !== '') this.setState({ isGallerist: true })
     } catch (error) {
       
     }
@@ -40,19 +41,19 @@ class NavigationBar extends Component {
   
   
   render() {
-    const { isGallerist, isLoggedIn } = this.state
+    const { canAddArtwork, isLoggedIn } = this.state
     return (
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
         <Navbar.Brand href="/">DArt</Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
-            {/* <Nav.Link href="/artworks">Artworks</Nav.Link> */}
+            <Nav.Link href="/artworks">Artworks</Nav.Link>
             <Nav.Link href="/auctions">Auctions</Nav.Link>
           </Nav>
           <Nav>
-            {isGallerist ? <Nav.Link href="/add/artwork">Add artwork</Nav.Link> : null }
-            <Nav.Link href="/collections">Collections</Nav.Link>
+            {canAddArtwork ? <Nav.Link href="/add/artwork">Add artwork</Nav.Link> : null }
+            { isLoggedIn ? <Nav.Link href="/collections">Collections</Nav.Link> : null }
             { isLoggedIn ? <Nav.Link onClick={() => this.logout()}>Log out</Nav.Link> : null }
           </Nav>
         </Navbar.Collapse>

@@ -20,7 +20,7 @@ class Auctions extends Component {
   }
 
   async componentWillMount() {
-    const { address } = JSON.parse(sessionStorage.getItem('jsonwallet'))
+    const jsonwallet = JSON.parse(sessionStorage.getItem('jsonwallet'))
     try {
       const contract = ContractUtil.loadContract('ArtworkOwnership')
       const auctionAddresses = await contract.getAllAuctionAddresses()
@@ -30,7 +30,8 @@ class Auctions extends Component {
         const auctionAddress = auctionAddresses[auctionId]
         const auction = await ContractUtil.loadAuctionByAddress(auctionAddress)
         const isOngoing = !(await auction.hasEnded())
-        const isSubscribed = await auction.isUserSubscribed(address)
+        console.log(isOngoing)
+        const isSubscribed = jsonwallet ? await auction.isUserSubscribed(jsonwallet.address) : false
         if (isOngoing || isSubscribed) {
           const tokenId = await auction.tokenId()
           const auctionData = {
@@ -40,13 +41,13 @@ class Auctions extends Component {
             endDate: (await auction.endDate()) * 1000,
             startingBid: await auction.startingBid(),
             bidIncrement: await auction.bidIncrement(),
-            tokenId: tokenId,
+            tokenId,
             maxBid: await auction.highestAllowedBidAmount(),
             highestBid: await auction.getHighestBid(),
           }
-          const [title, category, artist, photoIpfsHash, description, year] = await contract.getArtwork(auction.tokenId)
+          const [title, category, artist, photoIpfsHash, description, year] = await contract.getArtwork(tokenId)
           const artwork = { tokenId, title, category, artist, imgURL: `https://ipfs.io/ipfs/${photoIpfsHash}`, description, year }
-          const isOwner = `0x${address.toLowerCase()}` === auctionData.owner.toLowerCase()
+          const isOwner = jsonwallet ? `0x${jsonwallet.address.toLowerCase()}` === auctionData.owner.toLowerCase() : false
           const hasOwnerWithdrawn = await auction.hasOwnerWithdrawn()
           if (isOwner && !hasOwnerWithdrawn) this.setState({ currentGalleryAuctions: [...this.state.currentGalleryAuctions, { auction: auctionData, artwork }]})
           else if (!isOwner && isOngoing) this.setState({ ongoingAuctions: [...this.state.ongoingAuctions, { auction: auctionData, artwork }]})
@@ -63,6 +64,7 @@ class Auctions extends Component {
   }
 
   renderAuctions(auctions) {
+    console.log(auctions)
     return auctions.map(auction =>
       <Col md={3} sm={6} key={auction.artwork.title}>
         <ArtworkCard
@@ -82,26 +84,26 @@ class Auctions extends Component {
       <Container>
         {
           currentGalleryAuctions.length > 0 ?
-          <Row>
+          <div>
             <Row><h3>Your Auctions</h3></Row>
             <Row>{this.renderAuctions(currentGalleryAuctions)}</Row>
-          </Row> : null
+          </div> : null
         }
         {
           subscribedAuctions.length > 0 ?
-          <Row>
+          <div>
             <Row><h3>Subscribed Auctions</h3></Row>
             <Row>{this.renderAuctions(subscribedAuctions)}</Row>
-          </Row> : null
+          </div> : null
         }
         {
           ongoingAuctions.length > 0 ?
-          <Row>
+          <div>
             <Row>
               <h3>Ongoing Auctions</h3>
             </Row>
             <Row>{this.renderAuctions(ongoingAuctions)}</Row>
-          </Row> : null
+          </div> : null
         }
       </Container>
     )

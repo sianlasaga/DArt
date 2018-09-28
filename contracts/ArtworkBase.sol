@@ -39,7 +39,7 @@ contract ArtworkBase is Ownable {
   mapping (uint => address) internal artworkApprovals;
   mapping (address => mapping (address => bool)) internal operatorApprovals;
 
-  mapping (address => Gallery) internal galleries;
+  mapping (address => Gallery) public galleries;
   mapping (string => uint[]) categoryToArtIndexes;
   mapping (string => uint[]) artistToArtIndexes;
 
@@ -117,14 +117,6 @@ contract ArtworkBase is Ownable {
     return artworkIndexToOwner[_tokenId];
   }
 
-  function getGalleryByAddress(address galleryAddress) public view returns (string, string, uint) {
-    return (
-      galleries[galleryAddress].name,
-      galleries[galleryAddress].completeAddress,
-      galleries[galleryAddress].artworkCount
-    );
-  }
-
   function getArtworkOwnerHistoryCount(uint _tokenId) public view isArtworkExists(_tokenId) returns (uint) {
     return artworks[_tokenId].ownerHistory.length;
   }
@@ -135,5 +127,9 @@ contract ArtworkBase is Ownable {
 
   function getAllAuctionAddresses() external view returns (address[]) {
     return auctions;
+  }
+
+  function getArtworksByCategory(string _category) external view returns (uint[]) {
+    return categoryToArtIndexes[_category];
   }
 }

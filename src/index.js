@@ -13,6 +13,7 @@ import AddArtwork from './components/smart/AddArtwork'
 import ArtworkView from './components/smart/ArtworkView'
 import Auctions from './components/smart/Auctions'
 import AuctionView from './components/smart/AuctionView'
+import Artworks from './components/smart/Artworks'
 import ArtworkCollection from './components/smart/ArtworkCollection'
 import registerServiceWorker from './registerServiceWorker'
 
@@ -26,6 +27,7 @@ const Root = () => (
           <Route path="/add/gallery" component={AddGallery} />
           <Route path="/add/artwork" component={AddArtwork} />
           <Route path="/collections" component={ArtworkCollection} />
+          <Route path="/artworks" component={Artworks} />
           <Route path="/auctions" component={Auctions} />
           <Route path="/artwork/:tokenId" component={ArtworkView} />
           <Route path="/auction/:auctionId" component={AuctionView} />

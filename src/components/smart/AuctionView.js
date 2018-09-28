@@ -54,16 +54,21 @@ class AuctionView extends Component {
 
   async componentWillMount() {
     const { auctionId } = this.props.match.params
-    const { address } = JSON.parse(sessionStorage.getItem('jsonwallet'))
+    const jsonwallet = JSON.parse(sessionStorage.getItem('jsonwallet'))
+    if (!jsonwallet) {
+      alert('Please log in to your wallet to view this auction.')
+      this.props.history.push('/')
+      return
+    }
     const contract = ContractUtil.loadContract('ArtworkOwnership')
     const auctionAddress = await contract.auctions(auctionId)
     const auction = await ContractUtil.loadAuctionByAddress(auctionAddress)
     const owner = await auction.owner()
-    const isOwner = `0x${address.toLowerCase()}` === owner.toLowerCase()
+    const isOwner = `0x${jsonwallet.address.toLowerCase()}` === owner.toLowerCase()
     console.log(isOwner)
     if (isOwner) this.setState({ isOwner: true })
     else {
-      const userTotalBid = await auction.getTotalBidByAddress(address)
+      const userTotalBid = await auction.getTotalBidByAddress(jsonwallet.address)
       this.setState({ showWallet: true, userTotalBid: userTotalBid / 10**15 })
     }
     const tokenId = await auction.tokenId()
@@ -81,7 +86,7 @@ class AuctionView extends Component {
     }
     const [title, category, artist, photoIpfsHash, description, year] = await contract.getArtwork(tokenId)
     const artwork = { tokenId, title, category, artist, imgURL: `https://ipfs.io/ipfs/${photoIpfsHash}`, description, year }
-    this.setState({ auctionAddress, artwork, auction: auctionData, userAddress: address })
+    this.setState({ auctionAddress, artwork, auction: auctionData, userAddress: jsonwallet.address })
     let duration = moment.duration(timeLeft, 'seconds')
     let currentHighestBid = auctionData.highestBid
     setInterval(async () => {
@@ -94,7 +99,7 @@ class AuctionView extends Component {
       if (highestBid !== currentHighestBid) {
         const highestBidder = await auction.highestBidder()
         currentHighestBid = highestBid
-        this.setState({ bidAmount: (highestBid / 10**15) + (auctionData.bidIncrement) / 10**15, auction: { ...this.state.auction, highestBidder, highestBid }})
+        this.setState({ auction: { ...this.state.auction, highestBidder, highestBid }})
       }
     }, 1000)
     
@@ -193,7 +198,7 @@ class AuctionView extends Component {
     if (wallet) {
       if (hasEnded && wallet.address.toLowerCase() === auction.highestBidder.toLowerCase()) {
         return <h5 style={{ textAlign: 'center' }}>Congratulations! You won!</h5>
-      } else if (userTotalBid === 0) {
+      } else if (hasEnded && userTotalBid === 0) {
         return null
       }
       else if (hasEnded) {

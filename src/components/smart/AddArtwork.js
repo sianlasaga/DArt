@@ -7,12 +7,14 @@ import Wallet from '../../utils/wallet'
 import { upload } from '../../utils/ipfs'
 import WalletModal from '../dumb/WalletModal'
 
+import { availableCategories } from '../../config'
+
 class AddArtwork extends Component {
   constructor(props) {
     super(props)
     this.state = {
       title: '',
-      category: '',
+      category: availableCategories[0],
       artist: '',
       photoIpfsHash: null,
       imageUploads: null,
@@ -45,7 +47,6 @@ class AddArtwork extends Component {
   async handleSubmit(e) {
     e.preventDefault()
     const { title, category, artist, photoIpfsHash, imageUploads, description, year, password } = this.state
-    console.log(imageUploads.files[0])
     const file = imageUploads.files[0]
     upload(file, async (err, response) => {
       if (err) console.log(err)

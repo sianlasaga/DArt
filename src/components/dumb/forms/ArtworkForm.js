@@ -1,6 +1,8 @@
 import React from 'react'
 import { Form, Button, Row, Col } from 'react-bootstrap/lib'
 
+import { availableCategories } from '../../../config'
+
 const ArtworkForm = props => (
   <Form>
     <Row>
@@ -30,10 +32,16 @@ const ArtworkForm = props => (
         <Form.Group controlId="formArtworkCategory">
           <Form.Label>Category</Form.Label>
           <Form.Control
+            as="select"
             name="category"
             value={props.category}
             onChange={props.handleInputChange}
-          />
+          >
+          {
+            availableCategories.map(category =>
+              <option value={category}>{category}</option>)
+          }
+          </Form.Control>
         </Form.Group>
       </Col>
       <Col>

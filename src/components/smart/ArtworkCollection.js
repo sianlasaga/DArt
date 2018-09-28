@@ -15,9 +15,10 @@ class ArtworkCollection extends Component {
   }
 
   async componentWillMount() {
-    const { address } = JSON.parse(sessionStorage.getItem('jsonwallet'))
+    const jsonwallet = JSON.parse(sessionStorage.getItem('jsonwallet'))
+    if (!jsonwallet) return
     const contract = ContractUtil.loadContract('ArtworkOwnership')
-    const tokenIds = await contract.tokensOfOwner(address)
+    const tokenIds = await contract.tokensOfOwner(jsonwallet.address)
     const artworks = await Promise.all(tokenIds.map(async (id) => {
       const tokenId = id.toNumber()
       const [title, category, artist, photoIpfsHash, description, year] = await contract.getArtwork(tokenId)

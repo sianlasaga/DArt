@@ -58,12 +58,12 @@ contract('ArtworkBase, Auction', accounts => {
     it('allows owner to add a gallerist', async () => {
       try {
         await artworkBase.addGallery(gallery1, galleryName1, address1, { from: owner })
-        const [name, completeAddress, artworkCount] = await artworkBase.getGalleryByAddress(gallery1)
+        const [name, completeAddress, artworkCount] = await artworkBase.galleries(gallery1)
         assert.equal(name, galleryName1)
         assert.equal(completeAddress, address1)
         assert.equal(artworkCount, 0)
         await artworkBase.addGallery(gallery2, galleryName2, address2, { from: owner })
-        const [name2, completeAddress2, artworkCount2] = await artworkBase.getGalleryByAddress(gallery2)
+        const [name2, completeAddress2, artworkCount2] = await artworkBase.galleries(gallery2)
         assert.equal(name2, galleryName2)
         assert.equal(completeAddress2, address2)
         assert.equal(artworkCount2, 0)
