@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Container, Button } from 'react-bootstrap/lib'
 
-import Contract from '../../utils/contract'
+import ContractUtil from '../../utils/contract'
 import Wallet from '../../utils/wallet'
 import GalleryForm from '../dumb/forms/GalleryForm'
 import WalletModal from '../dumb/WalletModal'
@@ -45,7 +45,9 @@ class AddGallery extends Component {
 			console.log(jsonwallet)
 			const wallet = await Wallet.decryptWallet(jsonwallet, password)
 			console.log(wallet)
-			const contract = new Contract('ArtworkOwnership', wallet.privateKey).contract
+			const contract = ContractUtil.loadContract('ArtworkOwnership', wallet.privateKey)
+			// const gasCost = await contract.estimate.addGallery(address, name, location)
+			// console.log(gasCost)
 			const result = await contract.addGallery(address, name, location)
 		} catch (error) {
 			console.log(error)

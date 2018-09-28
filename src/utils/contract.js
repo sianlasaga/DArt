@@ -5,45 +5,39 @@ const Auction =  require('../contracts/Auction.json')
 const ArtworkBase = require('../contracts/ArtworkBase.json')
 const ArtworkOwnership = require('../contracts/ArtworkOwnership.json')
 
-class Contract {
+const getContractJson = (type) => {
+  if (type === 'Auction') return Auction
+  else if (type === 'ArtworkBase') return ArtworkBase
+  else if (type === 'ArtworkOwnership') return ArtworkOwnership
+}
 
-  constructor(type, privateKey) {
-    const { abi, address } = this.getAbiAndContractAddress(type)
-    console.log(address)
+const getAbiAndContractAddress = (type) => {
+  const contractJson = getContractJson(type)
+  return {
+    abi: contractJson.abi,
+    address: contractJson.networks[networkId].address,
+  }
+}
+
+const ContractUtil = {
+  loadContract: (type, privateKey) => {
+    const { abi, address } = getAbiAndContractAddress(type)
     let wallet = null
     if (privateKey) {
       wallet = new ethers.Wallet(privateKey, provider)
     }
-    console.log(wallet)
-    this.contract = (wallet) ? new ethers.Contract(address, abi, wallet)
-      : new ethers.Contract(address, abi, provider)
-  }
-
-  // static async loadContract(type) {
-  //   const { abi, address } = this.getAbiAndContractAddress(type)
-  //   return new ethers.Contract(address, abi, provider)
-  // }
-
-  // static async loadContractWithWallet(type, wallet) {
-  //   const { abi, address } = this.getAbiAndContractAddress(type)
-  //   return new ethers.Contract(address, abi, wallet)
-  // }
-
-  getContractJson(type) {
-    if (type === 'Auction') return Auction
-    else if (type === 'ArtworkBase') return ArtworkBase
-    else if (type === 'ArtworkOwnership') return ArtworkOwnership
-  }
-
-  getAbiAndContractAddress(type) {
-    const contractJson = this.getContractJson(type)
-    return {
-      abi: contractJson.abi,
-      address: contractJson.networks[networkId].address,
+    return wallet ? new ethers.Contract(address, abi, wallet)
+    : new ethers.Contract(address, abi, provider)
+  },
+  loadAuctionByAddress: (address, privateKey) => {
+    const { abi } = Auction
+    if (privateKey) {
+      const wallet = new ethers.Wallet(privateKey, provider)
+      return new ethers.Contract(address, abi, wallet)
     }
+    return new ethers.Contract(address, abi, provider)
   }
-  
 }
 
-export default Contract
+export default ContractUtil
 

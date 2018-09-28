@@ -14,7 +14,7 @@ const AuctionForm = props => (
           placeholder="Enter starting price"
         />
         <InputGroup.Append>
-          <InputGroup.Text>FINNEY</InputGroup.Text>
+          <InputGroup.Text>FIN</InputGroup.Text>
         </InputGroup.Append>
       </InputGroup>
     </Form.Group>
@@ -29,7 +29,7 @@ const AuctionForm = props => (
           placeholder="Enter max bid"
         />
         <InputGroup.Append>
-          <InputGroup.Text>FINNEY</InputGroup.Text>
+          <InputGroup.Text>FIN</InputGroup.Text>
         </InputGroup.Append>
       </InputGroup>
     </Form.Group>
@@ -44,7 +44,7 @@ const AuctionForm = props => (
           placeholder="Enter bid increment"
         />
         <InputGroup.Append>
-          <InputGroup.Text>FINNEY</InputGroup.Text>
+          <InputGroup.Text>FIN</InputGroup.Text>
         </InputGroup.Append>
       </InputGroup>
     </Form.Group>

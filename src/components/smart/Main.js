@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Container } from 'react-bootstrap/lib';
+import { Container, Jumbotron } from 'react-bootstrap/lib';
 
 import WalletForm from '../dumb/forms/WalletForm'
 import Wallet from '../../utils/wallet'
@@ -12,6 +12,7 @@ class Main extends Component {
       privateKey: '',
       password: '',
       shouldGenerateWallet: false,
+      isLoggedIn: false,
     }
 
     this.handleInputChange = this.handleInputChange.bind(this)
@@ -48,15 +49,18 @@ class Main extends Component {
   render() {
     const { privateKey, password, shouldGenerateWallet } = this.state
     return (
-      <Container>
-				<WalletForm
-          handleInputChange={this.handleInputChange}
-          handleSubmit={this.handleSubmit}
-          handleCheckBox={this.handleCheckBox}
-					privateKey={privateKey}
-					password={password}
-					shouldGenerateWallet={shouldGenerateWallet}
-				/>
+      <Container style={{ padding: '5%' }}>
+        <Jumbotron style={{ width: '65%', margin: 'auto', paddingRight: '7.5%', paddingLeft: '7.5%' }}>
+          <h1 style={{ textAlign: 'center'}}>Log in Wallet</h1>
+          <WalletForm
+            handleInputChange={this.handleInputChange}
+            handleSubmit={this.handleSubmit}
+            handleCheckBox={this.handleCheckBox}
+            privateKey={privateKey}
+            password={password}
+            shouldGenerateWallet={shouldGenerateWallet}
+          />
+        </Jumbotron>
       </Container>
     )
   }

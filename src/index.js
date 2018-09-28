@@ -11,21 +11,27 @@ import Main from './components/smart/Main'
 import AddGallery from './components/smart/AddGallery'
 import AddArtwork from './components/smart/AddArtwork'
 import ArtworkView from './components/smart/ArtworkView'
+import Auctions from './components/smart/Auctions'
+import AuctionView from './components/smart/AuctionView'
 import ArtworkCollection from './components/smart/ArtworkCollection'
 import registerServiceWorker from './registerServiceWorker'
 
 const Root = () => (
   <Router>
-    <Container>
+    <div>
       <NavigationBar />
-      <Switch>
-        <Route exact path="/" component={Main} />
-        <Route path="/add/gallery" component={AddGallery} />
-        <Route path="/add/artwork" component={AddArtwork} />
-        <Route path="/collections" component={ArtworkCollection} />
-        <Route path="/artwork/:tokenId" component={ArtworkView} />
-      </Switch>
-    </Container>
+      <Container>
+        <Switch>
+          <Route exact path="/" component={Main} />
+          <Route path="/add/gallery" component={AddGallery} />
+          <Route path="/add/artwork" component={AddArtwork} />
+          <Route path="/collections" component={ArtworkCollection} />
+          <Route path="/auctions" component={Auctions} />
+          <Route path="/artwork/:tokenId" component={ArtworkView} />
+          <Route path="/auction/:auctionId" component={AuctionView} />
+        </Switch>
+      </Container>
+    </div>
   </Router>
 )
 

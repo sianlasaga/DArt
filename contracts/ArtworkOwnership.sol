@@ -20,7 +20,7 @@ contract ArtworkOwnership is ArtworkBase, ERC721Basic, SupportsInterfaceWithLook
   }
 
   function createAuction(uint _tokenId, uint _durationInSec, uint _startingBid, uint _highestAllowedBidAmount, uint _bidIncrement) public canCreateAuction isOwnerOfToken(_tokenId) returns (address) {
-    require(_startingBid > _highestAllowedBidAmount);
+    require(_startingBid < _highestAllowedBidAmount);
     require(_bidIncrement < _highestAllowedBidAmount.sub(_startingBid));
     Auction auction = new Auction(_tokenId, msg.sender, _durationInSec, _startingBid, _highestAllowedBidAmount, _bidIncrement, this);
     artworkIndexToOwner[_tokenId] = auction;

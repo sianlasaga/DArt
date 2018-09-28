@@ -4,7 +4,7 @@ import { Container, Row, Col } from 'react-bootstrap/lib'
 import ArtworkCard from '../dumb/ArtworkCard'
 import ContractUtil from '../../utils/contract'
 
-class ArtworkCollection extends Component {
+class Artwork extends Component {
 
   constructor(props) {
     super(props);
@@ -52,4 +52,4 @@ class ArtworkCollection extends Component {
   }
 }
 
-export default ArtworkCollection
+export default Artwork

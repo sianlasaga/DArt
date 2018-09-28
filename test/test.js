@@ -46,19 +46,6 @@ contract('ArtworkBase, Auction', accounts => {
 
   describe('ArtworkBase unit test', () => {
 
-    it('allows owner to add a gallerist', async () => {
-      try {
-        await artworkBase.addGallery(gallery1, galleryName1, address1, { from: owner })
-        const [name, completeAddress, artworkCount] = await artworkBase.getGalleryByAddress(gallery1)
-        assert.equal(name, galleryName1)
-        assert.equal(completeAddress, address1)
-        assert.equal(artworkCount, 0)
-      } catch (error) {
-        console.log(error)
-        assert.fail()  
-      }
-    })
-
     it('does not allow non-owner to add a gallerist', async () => {
       try {
         await artworkBase.addGallery(gallery2, galleryName2, address2, { from: gallery1 })
@@ -68,12 +55,31 @@ contract('ArtworkBase, Auction', accounts => {
       }
     })
 
-    it('allows a gallerist to add an artwork', async () => {
+    it('allows owner to add a gallerist', async () => {
       try {
         await artworkBase.addGallery(gallery1, galleryName1, address1, { from: owner })
+        const [name, completeAddress, artworkCount] = await artworkBase.getGalleryByAddress(gallery1)
+        assert.equal(name, galleryName1)
+        assert.equal(completeAddress, address1)
+        assert.equal(artworkCount, 0)
+        await artworkBase.addGallery(gallery2, galleryName2, address2, { from: owner })
+        const [name2, completeAddress2, artworkCount2] = await artworkBase.getGalleryByAddress(gallery2)
+        assert.equal(name2, galleryName2)
+        assert.equal(completeAddress2, address2)
+        assert.equal(artworkCount2, 0)
+      } catch (error) {
+        console.log(error)
+        assert.fail()  
+      }
+    })
+
+    it('allows a gallerist to add an artwork', async () => {
+      try {
         await artworkBase.addArtwork(randomWord1, category1, artist1, image1, description1, year1, { from: gallery1 })
         const [title, category, artist, photoIpfsHash, description, year] = await artworkBase.getArtwork(0)
         const count = await artworkBase.getArtworkCount()
+        let totalSupply = await artworkBase.getTotalSupply()
+        assert.equal(totalSupply, 1)
         assert.equal(count, 1)
         assert.equal(title, randomWord1)
         assert.equal(category, category1)
@@ -86,6 +92,14 @@ contract('ArtworkBase, Auction', accounts => {
       }
     })
 
+    it('allows user to get the total supply of artworks', async () => {
+      let totalSupply = await artworkBase.getTotalSupply()
+      assert.equal(totalSupply, 1)
+      await artworkBase.addArtwork(randomWord2, category2, artist2, image2, description2, year2, { from: gallery1 })
+      totalSupply = await artworkBase.getTotalSupply()
+      assert.equal(totalSupply, 2)
+    })
+
     it('does not allow non-gallerist to add an artwork', async () => {
       try {
         await artworkBase.addArtwork(randomWord2, category2, artist2, image2, description2, year2, { from: buyer1 })
@@ -95,9 +109,18 @@ contract('ArtworkBase, Auction', accounts => {
       }
     })
 
+    it('allows user to get the total tokens/artworks owned by a user', async () => {
+      let gallery1Tokens = await artworkBase.tokensOfOwner(gallery1)
+      gallery1Tokens = gallery1Tokens.map(token => token.c[0])
+      assert.deepEqual(gallery1Tokens, [1, 0])
+      let gallery2Tokens = await artworkBase.tokensOfOwner(gallery2)
+      gallery2Tokens = gallery2Tokens.map(token => token.c[0])
+      assert.deepEqual(gallery2Tokens, [])
+    })
+
     it('allows gallerist to create an auction', async () => {
       await artworkBase.createAuction(0, 3600, 5 * ETHER, 10 * ETHER, 0.5 * ETHER, { from: gallery1 })
-      const event = artworkBase.CreateContract({})
+      const event = artworkBase.CreateAuction({})
       const watcher = async function (err, result) {
         event.stopWatching()
         if (err) throw err
@@ -260,7 +283,7 @@ contract('ArtworkBase, Auction', accounts => {
         try {
           const currentBidder2Bal = await web3.eth.getBalance(bidder2) / ETHER
           await auction.withdraw({ from: bidder2 })
-          assert.equal((await web3.eth.getBalance(bidder2) / ETHER).toFixed(2), (currentBidder2Bal + 5.5).toFixed(2))
+          assert.equal(Math.round(await web3.eth.getBalance(bidder2) / ETHER), Math.round(currentBidder2Bal + 5.5))
         } catch (error) {
           assert.fail()
         }
@@ -270,7 +293,7 @@ contract('ArtworkBase, Auction', accounts => {
         try {
           const currentOwnerBal = await web3.eth.getBalance(gallery1) / ETHER
           await auction.withdraw({ from: gallery1 })
-          assert.equal((await web3.eth.getBalance(gallery1) / ETHER).toFixed(0), (currentOwnerBal + 8).toFixed(0))
+          assert.equal(Math.round(await web3.eth.getBalance(gallery1) / ETHER), Math.round(currentOwnerBal + 8))
         } catch (error) {
           console.log(error)
           assert.fail()

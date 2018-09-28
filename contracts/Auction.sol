@@ -21,6 +21,7 @@ contract Auction {
   uint public tokenId;
   uint public highestAllowedBidAmount;
   bool public hasOwnerWithdrawn;
+  bool public isCancelled;
   address public highestBidder;
   mapping (address => uint) bidderToAmount;
 
@@ -61,7 +62,7 @@ contract Auction {
 
   function getTimeRemaining() public view returns (uint) {
     if (now > endDate) return 0;
-    return endDate - startDate + now;
+    return endDate - now;
   }
 
   function getHighestBid() public view returns (uint) {
@@ -92,6 +93,9 @@ contract Auction {
 
   function withdraw() external payable returns (bool) {
     require(hasEnded());
+    if (msg.sender == owner && !_hasBidder()) {
+      hasOwnerWithdrawn = true;
+    }
     require(_hasBidder());
     require(highestBidder != msg.sender);
     if (msg.sender == owner && !hasOwnerWithdrawn) {
@@ -111,6 +115,8 @@ contract Auction {
 
   function cancel() public onlyOwner onlyNotEnded {
     nfc.transferFrom(this, owner, tokenId);
+    endDate = now;
+    isCancelled = true;
   }
 
   function transferToken() public {
