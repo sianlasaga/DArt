@@ -77,10 +77,8 @@ contract('ArtworkBase, Auction', accounts => {
       try {
         await artworkBase.addArtwork(randomWord1, category1, artist1, image1, description1, year1, { from: gallery1 })
         const [title, category, artist, photoIpfsHash, description, year] = await artworkBase.getArtwork(0)
-        const count = await artworkBase.getArtworkCount()
         let totalSupply = await artworkBase.getTotalSupply()
         assert.equal(totalSupply, 1)
-        assert.equal(count, 1)
         assert.equal(title, randomWord1)
         assert.equal(category, category1)
         assert.equal(artist, artist1)
@@ -131,6 +129,7 @@ contract('ArtworkBase, Auction', accounts => {
       await awaitEvent(event, watcher)
     })
   })
+
   describe('Auction unit test', () => {
 
     it('deployed contract should have the expected details', async () => {
@@ -247,6 +246,11 @@ contract('ArtworkBase, Auction', accounts => {
         increaseTime(4000)
       })
 
+      it('the auction should be ended', async () => {
+        const isEnded = await auction.hasEnded()
+        assert.equal(isEnded, true)
+      })
+
       it('time remaining should be zero', async () => {
         const timeRemaining = await auction.getTimeRemaining()
         assert.equal(timeRemaining, 0)
@@ -258,6 +262,13 @@ contract('ArtworkBase, Auction', accounts => {
         } catch (error) {
           assert.ok(/revert/.test(error.message))
         }
+      })
+
+      it('allows user to check if he/she is subscribed to an auction', async () => {
+        const isUser1Subscribed = await auction.isUserSubscribed(bidder2)
+        assert.equal(isUser1Subscribed, true)
+        const isUser2Subscribed = await auction.isUserSubscribed(bidder3)
+        assert.equal(isUser2Subscribed, false)
       })
 
       it('allows to get the winning bidder', async () => {

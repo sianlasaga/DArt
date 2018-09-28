@@ -117,10 +117,6 @@ contract ArtworkBase is Ownable {
     return artworkIndexToOwner[_tokenId];
   }
 
-  function getArtworkCount() public view returns (uint) {
-    return artworks.length;
-  }
-
   function getGalleryByAddress(address galleryAddress) public view returns (string, string, uint) {
     return (
       galleries[galleryAddress].name,
